@@ -188,68 +188,61 @@ app.post('/todo', (req, res) =>
 ////////////////////////////////////Phase 3////////////////////////////////////
 app.get('/todo/size', (req, res) => {
     startTime = performance.now();
-    requestsLogger.info({reqId: logsCounter}, "Incoming request | #" + logsCounter +
-         " | resource: /todo/size | HTTP Verb GET");
     
     let status = req.query.status;
     let checkStatus = true;
 
     if (status != "ALL" && status != "PENDING" && status != "LATE" && status != "DONE")
     {
-        endTime = performance.now();
-        duration = endTime - startTime;
-        requestsLogger.debug({reqId: logsCounter}, "request #" + logsCounter
-        + " duration: " + duration + "ms");
-        logsCounter++;
-
         res.status(400).json({ result: '', errorMessage: "Bad Request" });
         checkStatus = false;
     }
 
-    else if (checkStatus && status === "ALL")
-    {
-        todosLogger.info({reqId: logsCounter}, `Total TODOs count for state ${status} is ${logArrSize}`);
-
-        endTime = performance.now();
-        duration = endTime - startTime;
-        requestsLogger.debug({reqId: logsCounter}, "request #" + logsCounter 
-        + " duration: " + duration + "ms");
-        logsCounter++;
-
-        res.status(200).json({result: logArrSize, errorMessage: ""});
-    }
-
     else
     {
-        let resCounter = 0;
-        for (let index = 0; index < arrSize; index++)
+        requestsLogger.info({reqId: logsCounter}, "Incoming request | #" + logsCounter +
+        " | resource: /todo/size | HTTP Verb GET");
+
+        if (checkStatus && status === "ALL")
         {
-            if (todosArr[index].status === status)
-            {
-                resCounter = resCounter + 1;
-            }
+            todosLogger.info({reqId: logsCounter}, `Total TODOs count for state ${status} is ${logArrSize}`);
+
+            endTime = performance.now();
+            duration = endTime - startTime;
+            requestsLogger.debug({reqId: logsCounter}, "request #" + logsCounter 
+            + " duration: " + duration + "ms");
+            logsCounter++;
+    
+            res.status(200).json({result: logArrSize, errorMessage: ""});
         }
 
-        todosLogger.info({reqId: logsCounter}, `Total TODOs count for state ${status} is ${resCounter}`);
-
-        endTime = performance.now();
-        duration = endTime - startTime;
-        requestsLogger.debug({reqId: logsCounter}, "request #" + logsCounter
-        + " duration: " + duration + "ms");
-
-        logsCounter++;
-
-        res.status(200).json({result: resCounter, errorMessage: ""});
+        else
+        {
+            let resCounter = 0;
+            for (let index = 0; index < arrSize; index++)
+            {
+                if (todosArr[index].status === status)
+                {
+                    resCounter = resCounter + 1;
+                }
+            }
+    
+            todosLogger.info({reqId: logsCounter}, `Total TODOs count for state ${status} is ${resCounter}`);
+    
+            endTime = performance.now();
+            duration = endTime - startTime;
+            requestsLogger.debug({reqId: logsCounter}, "request #" + logsCounter
+            + " duration: " + duration + "ms");
+            logsCounter++;
+    
+            res.status(200).json({result: resCounter, errorMessage: ""});
+        }
     }
   });
   ////////////////////////////////////Phase 4////////////////////////////////////
   app.get('/todo/content', (req, res) =>
   {
     startTime = performance.now();
-
-    requestsLogger.info({reqId: logsCounter}, "Incoming request | #" + logsCounter +
-         " | resource: /todo/content | HTTP Verb GET");
-
     let status = req.query.status, sortBy = req.query.sortBy;
 
     if (!sortBy)
@@ -261,32 +254,21 @@ app.get('/todo/size', (req, res) => {
 
     if (status != "ALL" && status != "PENDING" && status != "LATE" & status != "DONE")
     {
-        endTime = performance.now();
-        duration = endTime - startTime;
-        requestsLogger.debug({reqId: logsCounter}, "request #" + logsCounter 
-        + " duration: " + duration + "ms");
-
-        logsCounter++;
-
         checkStatus = false;
         res.status(400).json({ result: '', errorMessage: "Bad Request" });
     }
 
     else if (checkStatus && (sortBy && (sortBy != "ID" && sortBy != "DUE_DATE" && sortBy != "TITLE") ) )
     {
-        endTime = performance.now();
-        duration = endTime - startTime;
-        requestsLogger.debug({reqId: logsCounter}, "request #" + logsCounter 
-        + " duration: " + duration + "ms");
-
-        logsCounter++;
-
         checkSort = false;
         res.status(400).json({ result: '', errorMessage: "Bad Request" });
     }
 
     else if (checkStatus && checkSort)
     {
+        requestsLogger.info({reqId: logsCounter}, "Incoming request | #" + logsCounter +
+         " | resource: /todo/content | HTTP Verb GET");
+        
         todosLogger.info({reqId: logsCounter}, `Extracting todos content. Filter: ${status} | Sorting by: ${sortBy}`);
 
         let resArr = [];
@@ -319,7 +301,6 @@ app.get('/todo/size', (req, res) => {
         duration = endTime - startTime;
         requestsLogger.debug({reqId: logsCounter}, "request #" + logsCounter 
         + " duration: " + duration + "ms");
-
         logsCounter++;
 
         res.status(200).json({result: resArr, errorMessage:""});
@@ -330,65 +311,57 @@ app.get('/todo/size', (req, res) => {
   {
     startTime = performance.now();
 
-    requestsLogger.info({reqId: logsCounter}, "Incoming request | #" + logsCounter +
-    " | resource: /todo | HTTP Verb PUT");
-
     let param_id = req.query.id ,param_status = req.query.status;
     let checkStatus = true, foundID = false, checkID = true;
 
     if (param_status != "PENDING" && param_status != "LATE" && param_status != "DONE")
     {
-        endTime = performance.now();
-        duration = endTime - startTime;
-        requestsLogger.debug({reqId: logsCounter}, "request #" + logsCounter 
-        + " duration: " + duration + "ms");
-
-        logsCounter++;
-
         checkStatus = false;
         res.status(400).json({result:"",errorMessage:"Bad Request"});
     }
 
-    else if (checkStatus)
+    else
     {
+        requestsLogger.info({reqId: logsCounter}, "Incoming request | #" + logsCounter +
+        " | resource: /todo | HTTP Verb PUT");
+
         for (let index = 0; index < arrSize && !foundID; index++)
-    {
-        if (todosArr[index].id == param_id)
         {
-            foundID = true;
+            if (todosArr[index].id == param_id)
+            {
+                foundID = true;
+            }
         }
-    }
-    }
 
-    todosLogger.info({reqId: logsCounter}, `Update TODO id [${param_id}] state to ${param_status}`);
+        todosLogger.info({reqId: logsCounter}, `Update TODO id [${param_id}] state to ${param_status}`);
 
-    if (!foundID)
-    {
-        endTime = performance.now();
-        duration = endTime - startTime;
-        requestsLogger.debug({reqId: logsCounter}, "request #" + logsCounter 
-        + " duration: " + duration + "ms");
-
-        checkID = false;
-
-        todosLogger.error({reqId: logsCounter++}, `Error: no such TODO with id ${param_id}`);
-        res.status(404).json({result:"",errorMessage:`Error: no such TODO with id ${param_id}`});
-    }
-
-    else if (checkID && checkStatus)
-    {
-        let oldStatus = todosArr[param_id - 1].status;
-        todosArr[param_id - 1].status = param_status;
-        todosLogger.debug({reqId: logsCounter}, `Todo id [${param_id}] state change: ${oldStatus} --> ${param_status}`);
-
-        endTime = performance.now();
-        duration = endTime - startTime;
-        requestsLogger.debug({reqId: logsCounter}, "request #" + logsCounter 
-        + " duration: " + duration + "ms");
-
-        logsCounter++;
-
-        res.json({result:oldStatus, errorMessage:""});
+        if (!foundID)
+        {
+            endTime = performance.now();
+            duration = endTime - startTime;
+            requestsLogger.debug({reqId: logsCounter}, "request #" + logsCounter 
+            + " duration: " + duration + "ms");
+    
+            checkID = false;
+    
+            todosLogger.error({reqId: logsCounter++}, `Error: no such TODO with id ${param_id}`);
+            res.status(404).json({result:"",errorMessage:`Error: no such TODO with id ${param_id}`});
+        }
+    
+        else if (checkID && checkStatus)
+        {
+            let oldStatus = todosArr[param_id - 1].status;
+            todosArr[param_id - 1].status = param_status;
+            todosLogger.debug({reqId: logsCounter}, `Todo id [${param_id}] state change: ${oldStatus} --> ${param_status}`);
+    
+            endTime = performance.now();
+            duration = endTime - startTime;
+            requestsLogger.debug({reqId: logsCounter}, "request #" + logsCounter 
+            + " duration: " + duration + "ms");
+            logsCounter++;
+    
+            res.json({result:oldStatus, errorMessage:""});
+        }
     }
   });
 ////////////////////////////////////Phase 6////////////////////////////////////
@@ -445,25 +418,18 @@ app.get('/todo/size', (req, res) => {
   app.get('/logs/level', (req, res) =>
   {
     startTime = performance.now();
-
-    requestsLogger.info({reqId: logsCounter}, "Incoming request | #" + logsCounter +
-        " | resource: /logs/level | HTTP Verb GET");
-
     let loggerName = req.query['logger-name'], resLevel;
 
     if (loggerName != "request-logger" && loggerName != "todo-logger")
     {
-        endTime = performance.now();
-        duration = endTime - startTime;
-        requestsLogger.debug({reqId: logsCounter}, "request #" + logsCounter 
-        + " duration: " + duration + "ms");
-        logsCounter++;
-
         res.status(400).send(`Bad Request: No such logger named ${loggerName}`);
     }
 
     else
     {
+        requestsLogger.info({reqId: logsCounter}, "Incoming request | #" + logsCounter +
+        " | resource: /logs/level | HTTP Verb GET");
+
         if (loggerName == "request-logger")
         {
             resLevel = requestsLogger.level();
@@ -487,36 +453,23 @@ app.get('/todo/size', (req, res) => {
   app.put('/logs/level', (req, res) =>
   {
     startTime = performance.now();
-
-    requestsLogger.info({reqId: logsCounter}, "Incoming request | #" + logsCounter +
-        " | resource: /logs/level | HTTP Verb PUT");
-    
     let loggerName = req.query['logger-name'], desiredLevel = req.query['logger-level'];
 
     if (loggerName != "request-logger" && loggerName != "todo-logger")
     {
-        endTime = performance.now();
-        duration = endTime - startTime;
-        requestsLogger.debug({reqId: logsCounter}, "request #" + logsCounter 
-        + " duration: " + duration + "ms");
-        logsCounter++;
-
         res.status(400).send(`Bad Request: No such logger named ${loggerName}`);
     }
 
     else if (desiredLevel != "INFO" && desiredLevel != "DEBUG" && desiredLevel != "ERROR")
     {
-        endTime = performance.now();
-        duration = endTime - startTime;
-        requestsLogger.debug({reqId: logsCounter}, "request #" + logsCounter 
-        + " duration: " + duration + "ms");
-        logsCounter++;
-
         res.status(400).send(`Bad Request: Invalid level ${desiredLevel}`);
     }
 
     else
     {
+        requestsLogger.info({reqId: logsCounter}, "Incoming request | #" + logsCounter +
+        " | resource: /logs/level | HTTP Verb PUT");
+        
         if (loggerName == "request-logger")
         {
             resLevel = requestsLogger.level(desiredLevel);
